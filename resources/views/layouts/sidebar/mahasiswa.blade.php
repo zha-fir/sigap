@@ -4,5 +4,9 @@
             <i class="bi bi-speedometer2 me-2"></i>Dashboard
         </a>
     </li>
-    {{-- TODO Anggota 1: tambah menu mahasiswa di sini --}}
+    <li class="nav-item">
+    <a class="nav-link text-white" href="{{ route('mahasiswa.pengajuan.index') }}">
+        <i class="bi bi-envelope-paper me-2"></i>Pengajuan Saya
+    </a>
+</li>
 </ul>
