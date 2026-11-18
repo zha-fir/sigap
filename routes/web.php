@@ -49,6 +49,13 @@ Route::middleware(['auth', 'role:kajur'])->prefix('kajur')->name('kajur.')->grou
 
     Route::get('/ttd', [Kajur\TtdController::class, 'edit'])->name('ttd.edit');
     Route::post('/ttd', [Kajur\TtdController::class, 'update'])->name('ttd.update');
+
+Route::get('/surat', [Kajur\SuratController::class, 'index'])
+    ->name('surat.index');
+
+Route::get('/surat/{pengajuan}', [Kajur\SuratController::class, 'show'])
+    ->name('surat.show');
+
 });
 
 // ===== SUPER ADMIN =====

@@ -10,4 +10,9 @@
             <i class="bi bi-pen me-2"></i>Pengaturan TTD
         </a>
     </li>
+    <li class="nav-item">
+    <a class="nav-link text-white" href="{{ route('kajur.surat.index') }}">
+        <i class="bi bi-file-earmark-text me-1"></i> Daftar Surat
+    </a>
+    </li>
 </ul>
