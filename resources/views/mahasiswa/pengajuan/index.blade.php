@@ -12,7 +12,6 @@
         @endif
     </div>
 
-    {{-- Filter status --}}
     <form method="GET" action="{{ route('mahasiswa.pengajuan.index') }}" class="row g-2 mb-3">
         <div class="col-auto">
             <select name="status" class="form-select" onchange="this.form.submit()">

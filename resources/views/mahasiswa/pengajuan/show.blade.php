@@ -22,7 +22,6 @@
         <x-status-badge :status="$pengajuan->status" />
     </div>
 
-    {{-- Catatan revisi / alasan tolak --}}
     @if ($pengajuan->catatan_revisi && $pengajuan->status === \App\StatusPengajuan::PerluRevisi)
         <div class="alert alert-warning">
             <strong>Catatan revisi dari operator:</strong><br>
@@ -83,7 +82,6 @@
                 </div>
             </div>
 
-            {{-- Lampiran --}}
             <div class="card mb-3">
                 <div class="card-header fw-semibold">Lampiran</div>
                 <ul class="list-group list-group-flush">
@@ -100,17 +98,14 @@
                 </ul>
             </div>
 
-            {{-- Tombol aksi --}}
             <div class="d-flex gap-2">
                 <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline-secondary">Kembali</a>
 
-                {{-- Tombol Edit: muncul otomatis setelah route edit dibuat di tahap M3 --}}
                 @if (Route::has('mahasiswa.pengajuan.edit')
                     && in_array($pengajuan->status, [\App\StatusPengajuan::Draft, \App\StatusPengajuan::PerluRevisi]))
                     <a href="{{ route('mahasiswa.pengajuan.edit', $pengajuan) }}" class="btn btn-warning">Edit</a>
                 @endif
 
-                {{-- Tombol Cetak: muncul otomatis setelah route cetak dibuat di tahap M4 --}}
                 @if (Route::has('mahasiswa.surat.cetak')
                     && in_array($pengajuan->status, [
                         \App\StatusPengajuan::Ditandatangani,
@@ -124,7 +119,6 @@
             </div>
         </div>
 
-        {{-- Timeline riwayat status --}}
         <div class="col-lg-4 min-w-0">
             <div class="card">
                 <div class="card-header fw-semibold">Riwayat Status</div>
