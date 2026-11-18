@@ -7,7 +7,7 @@
 <div class="container-fluid py-3">
 
     {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1" style="color: #1e293b;">
                 Pratinjau Surat
@@ -18,15 +18,13 @@
         </div>
 
         <a href="{{ route('kajur.surat.index') }}"
-           class="btn btn-outline-secondary mt-3 mt-md-0">
-            <i class="bi bi-arrow-left me-1"></i>
-            Kembali
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Kembali
         </a>
     </div>
 
     {{-- Informasi Pengajuan --}}
-    <div class="card border-0 shadow-sm mb-4"
-         style="border-radius: 14px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px;">
         <div class="card-body p-4">
             <h5 class="fw-bold mb-3">Informasi Pengajuan</h5>
 
@@ -75,8 +73,7 @@
     </div>
 
     {{-- Dokumen Surat --}}
-    <div class="card border-0 shadow-sm mb-4"
-         style="border-radius: 14px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px;">
         <div class="card-body p-4">
 
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -93,21 +90,16 @@
 
             @if ($urlPdf)
                 <div class="mb-3">
-                    <a href="{{ $urlPdf }}"
-                       target="_blank"
-                       rel="noopener"
+                    <a href="{{ $urlPdf }}" target="_blank" rel="noopener"
                        class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-file-pdf me-1"></i>
-                        Buka PDF
+                        <i class="bi bi-file-pdf me-1"></i> Buka PDF
                     </a>
                 </div>
 
-                <iframe
-                    src="{{ $urlPdf }}"
-                    title="Pratinjau PDF Surat"
-                    width="100%"
-                    height="650"
-                    style="border: 1px solid #e2e8f0; border-radius: 10px;">
+                <iframe src="{{ $urlPdf }}"
+                        title="Pratinjau PDF Surat"
+                        width="100%" height="650"
+                        style="border: 1px solid #e2e8f0; border-radius: 10px;">
                 </iframe>
             @else
                 <div class="p-4 p-md-5 border rounded-3"
@@ -131,18 +123,17 @@
                     isi surat dari template sistem.
                 </div>
             @endif
-
         </div>
     </div>
 
     {{-- Lampiran --}}
-    <div class="card border-0 shadow-sm"
-         style="border-radius: 14px;">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px;">
         <div class="card-body p-4">
             <h5 class="fw-bold mb-3">Lampiran Pengajuan</h5>
 
             @forelse ($pengajuan->lampirans as $lampiran)
                 <div class="d-flex flex-wrap justify-content-between align-items-center border rounded-3 p-3 mb-2">
+
                     <div class="d-flex align-items-center">
                         <i class="bi bi-file-earmark me-3 fs-4"
                            style="color: #0d9488;"></i>
@@ -151,6 +142,7 @@
                             <div class="fw-semibold">
                                 {{ $lampiran->nama_file }}
                             </div>
+
                             <small class="text-muted">
                                 {{ number_format($lampiran->ukuran / 1024, 1) }} KB
                             </small>
@@ -158,11 +150,9 @@
                     </div>
 
                     <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($lampiran->path) }}"
-                       target="_blank"
-                       rel="noopener"
-                       class="btn btn-sm btn-outline-primary mt-2 mt-md-0">
-                        <i class="bi bi-download me-1"></i>
-                        Lihat Lampiran
+                       target="_blank" rel="noopener"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-download me-1"></i> Lihat Lampiran
                     </a>
                 </div>
             @empty
@@ -173,6 +163,30 @@
                     </p>
                 </div>
             @endforelse
+        </div>
+    </div>
+
+    {{-- Tombol Tanda Tangan --}}
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px;">
+        <div class="card-body p-4 text-end">
+
+            @if ($pengajuan->status === \App\StatusPengajuan::MenungguTtd)
+                <form action="{{ route('kajur.surat.tandatangani', $pengajuan->id) }}"
+                      method="POST"
+                      onsubmit="return confirm('Apakah Anda yakin ingin menandatangani surat ini?')">
+
+                    @csrf
+
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-pen me-2"></i>
+                        Tanda Tangani Surat
+                    </button>
+                </form>
+            @else
+                <span class="badge bg-success p-2">
+                    Surat Sudah Ditandatangani
+                </span>
+            @endif
 
         </div>
     </div>

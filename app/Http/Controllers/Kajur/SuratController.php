@@ -8,6 +8,8 @@ use App\StatusPengajuan;
 use App\Services\SuratRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\PengajuanStatusService;
+use Illuminate\Support\Facades\DB;
 
 class SuratController extends Controller
 {
@@ -72,4 +74,45 @@ class SuratController extends Controller
             'urlPdf'
         ));
     }
+
+    public function tandatangani(
+    Pengajuan $pengajuan,
+    PengajuanStatusService $service
+) {
+    abort_unless(
+        $pengajuan->status === StatusPengajuan::MenungguTtd,
+        404
+    );
+
+    $pejabat = auth()->user()->pejabat;
+
+    abort_if(
+        !$pejabat || !$pejabat->is_active || !$pejabat->file_ttd,
+        403,
+        'Data pejabat atau tanda tangan belum tersedia.'
+    );
+
+    $surat = $pengajuan->surat;
+
+    abort_if(!$surat, 404, 'Data surat tidak ditemukan.');
+
+    DB::transaction(function () use ($surat, $pejabat, $pengajuan, $service) {
+        $surat->update([
+            'pejabat_id' => $pejabat->id,
+            'status_ttd' => 'sudah',
+            'ditandatangani_at' => now(),
+        ]);
+
+        $service->ubah(
+            $pengajuan,
+            StatusPengajuan::Ditandatangani,
+            auth()->user(),
+            'Surat berhasil ditandatangani Kajur.'
+        );
+    });
+
+    return redirect()
+        ->route('kajur.surat.index')
+        ->with('success', 'Surat berhasil ditandatangani.');
+}
 }
