@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class PengajuanController extends Controller
 {
-    /** ID mahasiswa yang sedang login. Kalau akunnya tidak punya data mahasiswa -> 403. */
     private function mahasiswaId(): int
     {
         $mahasiswa = auth()->user()->mahasiswa;
