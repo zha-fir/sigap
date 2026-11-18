@@ -1,0 +1,8 @@
+<ul class="nav nav-pills flex-column gap-1">
+    <li class="nav-item">
+        <a class="nav-link text-white" href="{{ route('super_admin.dashboard') }}">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+    </li>
+    {{-- TODO Anggota 4: tambah menu super admin di sini --}}
+</ul>
