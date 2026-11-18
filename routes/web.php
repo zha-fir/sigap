@@ -37,11 +37,29 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
     // tambah route fitur mahasiswa di sini
 });
 
-// ===== OPERATOR =====
-Route::middleware(['auth', 'role:operator'])->prefix('operator')->name('operator.')->group(function () {
-    Route::get('/dashboard', [Operator\DashboardController::class, 'index'])->name('dashboard');
-    // tambah route fitur operator di sini
-});
+ // ===== OPERATOR =====
+Route::middleware(['auth', 'role:operator'])
+    ->prefix('operator')
+    ->name('operator.')
+    ->group(function () {
+
+        Route::get('/dashboard',
+            [Operator\DashboardController::class, 'index']
+        )->name('dashboard');
+
+        Route::get('/pengajuan',
+            [Operator\DashboardController::class, 'pengajuan']
+        )->name('pengajuan.index');
+
+        Route::get('/verifikasi',
+            [Operator\DashboardController::class, 'verifikasi']
+        )->name('verifikasi.index');
+
+        Route::get('/pengajuan/{pengajuan}',
+            [Operator\DashboardController::class, 'detail']
+        )->name('pengajuan.show');
+
+    });
 
 // ===== KETUA JURUSAN =====
 Route::middleware(['auth', 'role:kajur'])->prefix('kajur')->name('kajur.')->group(function () {
