@@ -20,4 +20,9 @@ class Pejabat extends Model
         return $this->belongsTo(User::class);
     }
     public function surats(): HasMany { return $this->hasMany(Surat::class); }
+
+    public function ttdUrl(): ?string
+    {
+        return $this->file_ttd ? asset('storage/' . $this->file_ttd) : null;
+    }
 }
