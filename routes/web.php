@@ -34,7 +34,6 @@ Route::middleware('auth')->group(function () {
 // ===== MAHASISWA =====
 Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
     Route::get('/dashboard', [Mahasiswa\DashboardController::class, 'index'])->name('dashboard');
-    
     Route::get('/pengajuan', [Mahasiswa\PengajuanController::class, 'index'])->name('pengajuan.index');
     Route::get('/pengajuan/{pengajuan}', [Mahasiswa\PengajuanController::class, 'show'])->name('pengajuan.show');
 });
