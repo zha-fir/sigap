@@ -13,10 +13,11 @@
     </style>
 </head>
 <body class="bg-light">
-    <div class="d-flex">
+    <div class="d-flex" style="min-height: 100vh;">
 
         {{-- SIDEBAR (menu di kiri) --}}
-        <aside class="bg-dark text-white p-3" style="width: 240px; min-height: 100vh;">
+        <aside class="bg-dark text-white p-3 flex-shrink-0"
+               style="width: 240px; min-width: 240px; min-height: 100vh;">
             <div class="fs-5 fw-bold mb-4 pb-2 border-bottom">
                 <i class="bi bi-envelope-paper me-3"></i>CAMPUSIGN
             </div>
@@ -24,7 +25,7 @@
         </aside>
 
         {{-- KONTEN (kanan) --}}
-        <div class="flex-grow-1">
+        <div class="flex-grow-1" style="min-width: 0;">
 
             {{-- Bagian atas: nama pengguna + tombol keluar --}}
             <nav class="navbar bg-white border-bottom px-3">
