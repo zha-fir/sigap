@@ -33,7 +33,7 @@ class DashboardController extends Controller
 
         return view('mahasiswa.dashboard' , [
             'mahasiswa' => $mahasiswa,
-            'totalpengajuan' => (int) $jumlah->sum(),
+            'totalPengajuan' => (int) $jumlah->sum(),
             'ringkasan' => $ringkasan,
             'terbaru' => $terbaru,
         ]);
