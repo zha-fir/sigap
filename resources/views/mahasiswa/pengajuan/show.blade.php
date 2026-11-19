@@ -37,7 +37,6 @@
 
     <div class="row g-3" style="min-width: 0;">
         <div class="col-lg-8 min-w-0">
-            {{-- Data isian --}}
             <div class="card mb-3">
                 <div class="card-header fw-semibold">Data Isian</div>
                 <div class="card-body">
