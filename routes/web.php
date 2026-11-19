@@ -59,6 +59,9 @@ Route::post('/surat/{pengajuan}/tandatangani',
     [Kajur\SuratController::class, 'tandatangani']
 )->name('surat.tandatangani');
 
+Route::post('/surat/{pengajuan}/kembalikan',[Kajur\SuratController::class, 'kembalikan']
+)->name('surat.kembalikan');
+
 });
 
 // ===== SUPER ADMIN =====

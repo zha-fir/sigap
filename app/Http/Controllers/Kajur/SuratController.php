@@ -6,13 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Pengajuan;
 use App\StatusPengajuan;
 use App\Services\SuratRenderer;
+use App\Services\PengajuanStatusService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Services\PengajuanStatusService;
 use Illuminate\Support\Facades\DB;
 
 class SuratController extends Controller
 {
+    // 1. Menampilkan daftar surat
     public function index(Request $request)
     {
         $cari = $request->query('cari');
@@ -44,6 +45,7 @@ class SuratController extends Controller
         return view('kajur.surat.index', compact('pengajuans', 'cari'));
     }
 
+    // 2. Menampilkan detail surat
     public function show(Pengajuan $pengajuan, SuratRenderer $renderer)
     {
         abort_unless(
@@ -75,44 +77,81 @@ class SuratController extends Controller
         ));
     }
 
+    // 3. Proses tanda tangan
     public function tandatangani(
-    Pengajuan $pengajuan,
-    PengajuanStatusService $service
-) {
-    abort_unless(
-        $pengajuan->status === StatusPengajuan::MenungguTtd,
-        404
-    );
+        Pengajuan $pengajuan,
+        PengajuanStatusService $service
+    ) {
+        abort_unless(
+            $pengajuan->status === StatusPengajuan::MenungguTtd,
+            404
+        );
 
-    $pejabat = auth()->user()->pejabat;
+        $pejabat = auth()->user()->pejabat;
 
-    abort_if(
-        !$pejabat || !$pejabat->is_active || !$pejabat->file_ttd,
-        403,
-        'Data pejabat atau tanda tangan belum tersedia.'
-    );
+        abort_if(
+            !$pejabat || !$pejabat->is_active || !$pejabat->file_ttd,
+            403,
+            'Data pejabat atau tanda tangan belum tersedia.'
+        );
 
-    $surat = $pengajuan->surat;
+        $surat = $pengajuan->surat;
 
-    abort_if(!$surat, 404, 'Data surat tidak ditemukan.');
+        abort_if(!$surat, 404, 'Data surat tidak ditemukan.');
 
-    DB::transaction(function () use ($surat, $pejabat, $pengajuan, $service) {
-        $surat->update([
-            'pejabat_id' => $pejabat->id,
-            'status_ttd' => 'sudah',
-            'ditandatangani_at' => now(),
+        DB::transaction(function () use (
+            $surat,
+            $pejabat,
+            $pengajuan,
+            $service
+        ) {
+            $surat->update([
+                'pejabat_id' => $pejabat->id,
+                'status_ttd' => 'sudah',
+                'ditandatangani_at' => now(),
+            ]);
+
+            $service->ubah(
+                $pengajuan,
+                StatusPengajuan::Ditandatangani,
+                auth()->user(),
+                'Surat berhasil ditandatangani Kajur.'
+            );
+        });
+
+        return redirect()
+            ->route('kajur.surat.index')
+            ->with('success', 'Surat berhasil ditandatangani.');
+    }
+
+    // 4. Mengembalikan surat kepada Operator
+    public function kembalikan(
+        Request $request,
+        Pengajuan $pengajuan,
+        PengajuanStatusService $service
+    ) {
+        $validated = $request->validate([
+            'catatan' => ['required', 'string', 'max:1000'],
+        ], [
+            'catatan.required' => 'Catatan pengembalian wajib diisi.',
+            'catatan.max' => 'Catatan maksimal 1000 karakter.',
         ]);
+
+        abort_unless(
+            $pengajuan->status === StatusPengajuan::MenungguTtd,
+            404,
+            'Pengajuan tidak dapat dikembalikan pada status ini.'
+        );
 
         $service->ubah(
             $pengajuan,
-            StatusPengajuan::Ditandatangani,
+            StatusPengajuan::Diproses,
             auth()->user(),
-            'Surat berhasil ditandatangani Kajur.'
+            $validated['catatan']
         );
-    });
 
-    return redirect()
-        ->route('kajur.surat.index')
-        ->with('success', 'Surat berhasil ditandatangani.');
-}
+        return redirect()
+            ->route('kajur.surat.index')
+            ->with('success', 'Surat berhasil dikembalikan kepada Operator.');
+    }
 }
