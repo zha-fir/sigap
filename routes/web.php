@@ -55,8 +55,7 @@ Route::get('/surat', [Kajur\SuratController::class, 'index'])
 
 Route::get('/surat/{pengajuan}', [Kajur\SuratController::class, 'show'])
     ->name('surat.show');
-Route::post('/surat/{pengajuan}/tandatangani',
-    [Kajur\SuratController::class, 'tandatangani']
+Route::post('/surat/{pengajuan}/tandatangani',[Kajur\SuratController::class, 'tandatangani']
 )->name('surat.tandatangani');
 
 Route::post('/surat/{pengajuan}/kembalikan',[Kajur\SuratController::class, 'kembalikan']

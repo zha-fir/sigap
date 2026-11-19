@@ -124,7 +124,7 @@ class SuratController extends Controller
             ->with('success', 'Surat berhasil ditandatangani.');
     }
 
-    // 4. Mengembalikan surat kepada Operator
+    // 4. Mengembalikan surat dari kajur kepada Operator
     public function kembalikan(
         Request $request,
         Pengajuan $pengajuan,
