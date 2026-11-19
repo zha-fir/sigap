@@ -83,5 +83,10 @@ Route::get('/surat/{pengajuan}', [Kajur\SuratController::class, 'show'])
 // ===== SUPER ADMIN =====
 Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
-    // tambah route fitur super admin di sini
+    Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('/program-studi', [Admin\ProgramStudiController::class, 'index'])->name('program-studi.index');
+    Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
+    Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');
+    Route::get('/pengaturan', [Admin\PengaturanController::class, 'edit'])->name('pengaturan.edit');
+    Route::get('/log', [Admin\LogController::class, 'index'])->name('log.index');
 });
