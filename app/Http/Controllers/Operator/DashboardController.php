@@ -31,17 +31,60 @@ class DashboardController extends Controller
             ->where('status', StatusPengajuan::SiapDiambil->value)
             ->count();
 
-        $terbaru = (clone $query)
+        $statistik = [
+            [
+                'nama' => 'Pengajuan Baru',
+                'jumlah' => $baru,
+                'ikon' => 'inbox',
+                'warna' => 'primary'
+            ],
+            [
+                'nama' => 'Mendekati SLA',
+                'jumlah' => null,
+                'ikon' => 'clock',
+                'warna' => 'warning'
+            ],
+            [
+                'nama' => 'Lewat SLA',
+                'jumlah' => null,
+                'ikon' => 'exclamation-triangle',
+                'warna' => 'danger'
+            ],
+            [
+                'nama' => 'Menunggu Perbaikan',
+                'jumlah' => $perbaikan,
+                'ikon' => 'arrow-repeat',
+                'warna' => 'info'
+            ],
+            [
+                'nama' => 'Siap Diambil',
+                'jumlah' => $siap,
+                'ikon' => 'check-circle',
+                'warna' => 'success'
+            ],
+            [
+                'nama' => 'Hampir Kedaluwarsa',
+                'jumlah' => null,
+                'ikon' => 'calendar-x',
+                'warna' => 'secondary'
+            ]
+        ];
+
+        $prioritas = (clone $query)
             ->with(['mahasiswa.user', 'jenisSurat'])
-            ->latest('id')
-            ->take(5)
+            ->whereNotIn('status', [
+                StatusPengajuan::Draft->value,
+                StatusPengajuan::Selesai->value,
+                StatusPengajuan::Ditolak->value
+            ])
+            ->orderBy('diajukan_at')
+            ->orderBy('id')
+            ->limit(10)
             ->get();
 
         return view('operator.dashboard', compact(
-            'baru',
-            'perbaikan',
-            'siap',
-            'terbaru'
+            'statistik',
+            'prioritas'
         ));
     }
 
