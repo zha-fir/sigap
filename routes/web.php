@@ -107,6 +107,12 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::patch('/users/{user}/toggle', [Admin\UserController::class, 'toggle'])->name('users.toggle');
     
     Route::get('/program-studi', [Admin\ProgramStudiController::class, 'index'])->name('program-studi.index');
+    Route::get('/program-studi/create', [Admin\ProgramStudiController::class, 'create'])->name('program-studi.create');
+    Route::post('/program-studi', [Admin\ProgramStudiController::class, 'store'])->name('program-studi.store');
+    Route::get('/program-studi/{programStudi}/edit', [Admin\ProgramStudiController::class, 'edit'])->name('program-studi.edit');
+    Route::put('/program-studi/{programStudi}', [Admin\ProgramStudiController::class, 'update'])->name('program-studi.update');
+    Route::delete('/program-studi/{programStudi}', [Admin\ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
+
     Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
     Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');
     Route::get('/pengaturan', [Admin\PengaturanController::class, 'edit'])->name('pengaturan.edit');
