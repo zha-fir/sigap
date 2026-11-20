@@ -41,6 +41,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
     Route::get('/pengajuan/{pengajuan}', [Mahasiswa\PengajuanController::class, 'show'])->name('pengajuan.show');
 });
 
+
  // ===== OPERATOR =====
 Route::middleware(['auth', 'role:operator'])
     ->prefix('operator')
@@ -62,6 +63,14 @@ Route::middleware(['auth', 'role:operator'])
         Route::get('/pengajuan/{pengajuan}',
             [Operator\DashboardController::class, 'detail']
         )->name('pengajuan.show');
+
+        Route::post('/pengajuan/{pengajuan}/terima',
+            [Operator\DashboardController::class, 'terima']
+        )->name('pengajuan.terima');
+
+        Route::post('/pengajuan/{pengajuan}/kirim-kajur',
+            [Operator\DashboardController::class, 'kirimKajur']
+        )->name('pengajuan.kirimKajur');
 
     });
 
