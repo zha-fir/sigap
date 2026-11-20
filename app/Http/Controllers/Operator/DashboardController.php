@@ -8,8 +8,6 @@ use App\Models\Pejabat;
 use App\StatusPengajuan;
 use App\Services\PengajuanStatusService;
 use App\Services\NomorSuratService;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,7 +16,11 @@ class DashboardController extends Controller
 {
     private function dataPengajuan()
     {
-        return Pengajuan::where('kode_tiket', 'like', 'PJ-CONTOH-%');
+        return Pengajuan::where(
+            'status',
+            '!=',
+            StatusPengajuan::Draft->value
+        );
     }
 
     public function index()
@@ -94,44 +96,6 @@ class DashboardController extends Controller
         ));
     }
 
-    public function pengajuan(Request $request)
-    {
-        $request->validate([
-            'cari' => 'nullable|string|max:100',
-            'status' => ['nullable', Rule::enum(StatusPengajuan::class)]
-        ]);
-
-        $query = $this->dataPengajuan()
-            ->with(['mahasiswa.user', 'jenisSurat']);
-
-        if ($request->filled('cari')) {
-            $cari = trim($request->input('cari'));
-
-            $query->where(function ($q) use ($cari) {
-                $q->where('kode_tiket', 'like', "%{$cari}%")
-                    ->orWhereHas('mahasiswa', function ($m) use ($cari) {
-                        $m->where('nim', 'like', "%{$cari}%");
-                    });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        $pengajuans = $query
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
-
-        $pilihanStatus = StatusPengajuan::cases();
-
-        return view('operator.pengajuan', compact(
-            'pengajuans',
-            'pilihanStatus'
-        ));
-    }
-
     public function verifikasi()
     {
         $pengajuans = $this->dataPengajuan()
@@ -150,7 +114,9 @@ class DashboardController extends Controller
     public function detail(Pengajuan $pengajuan)
     {
         abort_unless(
-            str_starts_with($pengajuan->kode_tiket, 'PJ-CONTOH-'),
+            $this->dataPengajuan()
+                ->whereKey($pengajuan->id)
+                ->exists(),
             404
         );
 
