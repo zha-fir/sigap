@@ -1,7 +1,5 @@
 @extends('layouts.app')
-
 @section('title', 'Detail Pengajuan')
-
 @section('content')
 
 <div class="container-fluid">
@@ -22,6 +20,24 @@
         </a>
 
     </div>
+
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     <div class="row g-3">
 
@@ -205,17 +221,47 @@
 
                     <div class="d-flex gap-2 flex-wrap">
 
-                        <button class="btn btn-success" disabled>
-                            <i class="bi bi-check-circle me-1"></i>
-                            Terima
-                        </button>
+                        @if($pengajuan->status === \App\StatusPengajuan::Diajukan)
 
-                        <button class="btn btn-warning" disabled>
+                            <form method="POST"
+                                  action="{{ route('operator.pengajuan.terima', $pengajuan->id) }}">
+                                @csrf
+
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Terima Pengajuan
+                                </button>
+
+                            </form>
+
+                        @elseif($pengajuan->status === \App\StatusPengajuan::Diproses)
+
+                            <form method="POST"
+                                  action="{{ route('operator.pengajuan.kirimKajur', $pengajuan->id) }}">
+                                @csrf
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-send me-1"></i>
+                                    Kirim ke Kajur
+                                </button>
+
+                            </form>
+
+                        @elseif($pengajuan->status === \App\StatusPengajuan::MenungguTtd)
+
+                            <span class="badge bg-info text-dark p-2">
+                                <i class="bi bi-clock me-1"></i>
+                                Menunggu Persetujuan Kajur
+                            </span>
+
+                        @endif
+
+                        <button type="button" class="btn btn-warning" disabled>
                             <i class="bi bi-arrow-repeat me-1"></i>
                             Minta Perbaikan
                         </button>
 
-                        <button class="btn btn-danger" disabled>
+                        <button type="button" class="btn btn-danger" disabled>
                             <i class="bi bi-x-circle me-1"></i>
                             Tolak
                         </button>

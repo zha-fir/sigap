@@ -4,9 +4,15 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengajuan;
+use App\Models\Pejabat;
 use App\StatusPengajuan;
+use App\Services\PengajuanStatusService;
+use App\Services\NomorSuratService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
@@ -157,5 +163,93 @@ class DashboardController extends Controller
         ]);
 
         return view('operator.detail', compact('pengajuan'));
+    }
+
+    public function terima(
+        Pengajuan $pengajuan,
+        PengajuanStatusService $statusService
+    ) {
+        DB::transaction(function () use ($pengajuan, $statusService) {
+            $data = $this->dataPengajuan()
+                ->lockForUpdate()
+                ->findOrFail($pengajuan->id);
+
+            if ($data->status !== StatusPengajuan::Diajukan) {
+                throw ValidationException::withMessages([
+                    'status' => 'Pengajuan tidak dapat diterima.'
+                ]);
+            }
+
+            $statusService->ubah(
+                $data,
+                StatusPengajuan::Diproses,
+                auth()->user()
+            );
+        });
+
+        return redirect()
+            ->route('operator.pengajuan.show', $pengajuan->id)
+            ->with('success', 'Pengajuan berhasil diterima.');
+    }
+
+    public function kirimKajur(
+        Pengajuan $pengajuan,
+        PengajuanStatusService $statusService,
+        NomorSuratService $nomorService
+    ) {
+        DB::transaction(function () use (
+            $pengajuan,
+            $statusService,
+            $nomorService
+        ) {
+            $data = $this->dataPengajuan()
+                ->with(['templateSurat', 'surat'])
+                ->lockForUpdate()
+                ->findOrFail($pengajuan->id);
+
+            if ($data->status !== StatusPengajuan::Diproses) {
+                throw ValidationException::withMessages([
+                    'status' => 'Pengajuan belum siap dikirim.'
+                ]);
+            }
+
+            if (!$data->templateSurat?->is_active) {
+                throw ValidationException::withMessages([
+                    'template' => 'Template surat tidak tersedia.'
+                ]);
+            }
+
+            $pejabat = Pejabat::where('is_active', true)->first();
+
+            if (!$pejabat) {
+                throw ValidationException::withMessages([
+                    'pejabat' => 'Data Ketua Jurusan belum tersedia.'
+                ]);
+            }
+
+            if (!$data->surat) {
+                $data->surat()->create([
+                    'nomor_surat' => $nomorService->generate(
+                        $data->templateSurat
+                    ),
+                    'tanggal_surat' => now()->toDateString(),
+                    'isi_surat' => $data->templateSurat->isi_template,
+                    'kode_verifikasi' => Str::random(64),
+                    'pejabat_id' => $pejabat->id,
+                    'dibuat_oleh' => auth()->id(),
+                    'status_ttd' => 'belum'
+                ]);
+            }
+
+            $statusService->ubah(
+                $data,
+                StatusPengajuan::MenungguTtd,
+                auth()->user()
+            );
+        });
+
+        return redirect()
+            ->route('operator.pengajuan.show', $pengajuan->id)
+            ->with('success', 'Surat berhasil dikirim ke Kajur.');
     }
 }
