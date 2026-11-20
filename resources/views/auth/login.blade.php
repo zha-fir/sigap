@@ -19,7 +19,13 @@
 
     <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="password" id="password" name="password" class="form-control" required>
+        <div class="input-group has-validation">
+            <input type="password" id="password" name="password" class="form-control" required>
+            <button type="button" class="btn btn-outline-secondary"
+                    data-toggle-password="#password" aria-label="Tampilkan password">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
     </div>
 
     <button class="btn btn-primary w-100">Masuk</button>

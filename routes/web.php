@@ -88,7 +88,14 @@ Route::post('/surat/{pengajuan}/kembalikan',[Kajur\SuratController::class, 'kemb
 // ===== SUPER ADMIN =====
 Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
+    
     Route::get('/users', [Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [Admin\UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [Admin\UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [Admin\UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [Admin\UserController::class, 'update'])->name('users.update');
+    Route::patch('/users/{user}/toggle', [Admin\UserController::class, 'toggle'])->name('users.toggle');
+    
     Route::get('/program-studi', [Admin\ProgramStudiController::class, 'index'])->name('program-studi.index');
     Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
     Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');

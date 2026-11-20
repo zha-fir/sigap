@@ -60,15 +60,27 @@
 
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" id="password" name="password"
-                   class="form-control @error('password') is-invalid @enderror" required>
-            @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="input-group has-validation">
+                <input type="password" id="password" name="password"
+                    class="form-control @error('password') is-invalid @enderror" required>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-toggle-password="#password" aria-label="Tampilkan password">
+                    <i class="bi bi-eye"></i>
+                </button>
+                @error('password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
         </div>
 
         <div class="mb-3">
             <label for="password_confirmation" class="form-label">Konfirmasi password</label>
-            <input type="password" id="password_confirmation" name="password_confirmation"
+            <div class="input-group">
+                <input type="password" id="password_confirmation" name="password_confirmation"
                    class="form-control" required>
+                <button type="button" class="btn btn-outline-secondary"
+                        data-toggle-password="#password_confirmation" aria-label="Tampilkan konfirmasi password">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
         </div>
 
         <button class="btn btn-primary w-100">Daftar</button>

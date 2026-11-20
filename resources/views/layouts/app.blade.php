@@ -19,7 +19,7 @@
         <aside class="bg-dark text-white p-3 flex-shrink-0"
                style="width: 240px; min-width: 240px; min-height: 100vh;">
             <div class="fs-5 fw-bold mb-4 pb-2 border-bottom">
-                <i class="bi bi-envelope-paper me-3"></i>CAMPUSIGN
+                <i class="bi bi-envelope-paper me-3"></i>SIGAP
             </div>
             @include('layouts.sidebar.' . auth()->user()->role->value)
         </aside>
@@ -44,10 +44,25 @@
                 @if (session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
-
+                @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
                 @yield('content')
             </main>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-toggle-password]').forEach(function (tombol) {
+            tombol.addEventListener('click', function () {
+                var input = document.querySelector(tombol.dataset.togglePassword);
+                var ikon  = tombol.querySelector('i');
+                var tampil = input.type === 'password';
+
+                input.type = tampil ? 'text' : 'password';
+                ikon.className = tampil ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        });
+    </script>
 </body>
 </html>
