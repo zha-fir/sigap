@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
 
 
  // ===== OPERATOR =====
+
 Route::middleware(['auth', 'role:operator'])
     ->prefix('operator')
     ->name('operator.')
@@ -49,7 +50,7 @@ Route::middleware(['auth', 'role:operator'])
         )->name('dashboard');
 
         Route::get('/pengajuan',
-            [Operator\DashboardController::class, 'pengajuan']
+            [Operator\PengajuanController::class, 'index']
         )->name('pengajuan.index');
 
         Route::get('/verifikasi',
