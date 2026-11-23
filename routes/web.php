@@ -114,6 +114,13 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::delete('/program-studi/{programStudi}', [Admin\ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
 
     Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
+    Route::get('/jenis-surat/create', [Admin\JenisSuratController::class, 'create'])->name('jenis-surat.create');
+    Route::post('/jenis-surat', [Admin\JenisSuratController::class, 'store'])->name('jenis-surat.store');
+    Route::get('/jenis-surat/{jenisSurat}/edit', [Admin\JenisSuratController::class, 'edit'])->name('jenis-surat.edit');
+    Route::put('/jenis-surat/{jenisSurat}', [Admin\JenisSuratController::class, 'update'])->name('jenis-surat.update');
+    Route::patch('/jenis-surat/{jenisSurat}/toggle', [Admin\JenisSuratController::class, 'toggle'])->name('jenis-surat.toggle');
+    Route::delete('/jenis-surat/{jenisSurat}', [Admin\JenisSuratController::class, 'destroy'])->name('jenis-surat.destroy');
+
     Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');
     Route::get('/pengaturan', [Admin\PengaturanController::class, 'edit'])->name('pengaturan.edit');
     Route::get('/log', [Admin\LogController::class, 'index'])->name('log.index');
