@@ -115,6 +115,9 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
 
     Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
     Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');
+    
     Route::get('/pengaturan', [Admin\PengaturanController::class, 'edit'])->name('pengaturan.edit');
+    Route::put('/pengaturan', [Admin\PengaturanController::class, 'update'])->name('pengaturan.update');
+
     Route::get('/log', [Admin\LogController::class, 'index'])->name('log.index');
 });
