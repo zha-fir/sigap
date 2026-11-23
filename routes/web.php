@@ -114,6 +114,17 @@ Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')
     Route::delete('/program-studi/{programStudi}', [Admin\ProgramStudiController::class, 'destroy'])->name('program-studi.destroy');
 
     Route::get('/jenis-surat', [Admin\JenisSuratController::class, 'index'])->name('jenis-surat.index');
+    
+    Route::get('/template', [Admin\TemplateController::class, 'index'])->name('template.index');
+    Route::get('/template/create', [Admin\TemplateController::class, 'create'])->name('template.create');
+    Route::post('/template', [Admin\TemplateController::class, 'store'])->name('template.store');
+    Route::get('/template/{template}/edit', [Admin\TemplateController::class, 'edit'])->name('template.edit');
+    Route::put('/template/{template}', [Admin\TemplateController::class, 'update'])->name('template.update');
+    Route::get('/template/{template}/pratinjau', [Admin\TemplateController::class, 'pratinjau'])->name('template.pratinjau');
+    Route::post('/template/{template}/fields', [Admin\TemplateFieldController::class, 'store'])->name('template.fields.store');
+    Route::put('/template/{template}/fields', [Admin\TemplateFieldController::class, 'update'])->name('template.fields.update');
+    Route::delete('/template/{template}/fields/{field}', [Admin\TemplateFieldController::class, 'destroy'])->name('template.fields.destroy');
+
     Route::get('/jenis-surat/create', [Admin\JenisSuratController::class, 'create'])->name('jenis-surat.create');
     Route::post('/jenis-surat', [Admin\JenisSuratController::class, 'store'])->name('jenis-surat.store');
     Route::get('/jenis-surat/{jenisSurat}/edit', [Admin\JenisSuratController::class, 'edit'])->name('jenis-surat.edit');
