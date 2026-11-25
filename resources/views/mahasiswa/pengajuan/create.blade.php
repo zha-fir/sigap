@@ -3,7 +3,12 @@
 @section('title', 'Ajukan Surat')
 
 @section('content')
-    <h1 class="h4 mb-3">Ajukan Surat</h1>
+        <div class="d-flex justify-content-between align-items-start mb-3">
+        <h1 class="h4 mb-0">Ajukan Surat</h1>
+        <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Kembali
+        </a>
+    </div>
 
     @if (! $template)
         <div class="alert alert-warning">
