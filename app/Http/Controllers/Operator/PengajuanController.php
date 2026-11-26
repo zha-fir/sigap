@@ -12,37 +12,49 @@ class PengajuanController extends Controller
 {
     public function index(Request $request)
     {
+        $pilihanStatus = [
+            StatusPengajuan::Diajukan,
+            StatusPengajuan::Diproses,
+            StatusPengajuan::PerluRevisi
+        ];
+
         $request->validate([
-            'cari' => 'nullable|string|max:100',
-            'status' => ['nullable', Rule::enum(StatusPengajuan::class)]
+            'cari' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', Rule::in(array_map(
+                fn ($status) => $status->value,
+                $pilihanStatus
+            ))]
         ]);
 
-        $query = Pengajuan::with([
+        $pengajuans = Pengajuan::with([
             'mahasiswa.user',
-            'jenisSurat'
-        ])->where('status', '!=', StatusPengajuan::Draft->value);
+            'jenisSurat',
+            'data'
+        ])
+            ->whereIn('status', array_map(
+                fn ($status) => $status->value,
+                $pilihanStatus
+            ))
+            ->when($request->filled('cari'), function ($query) use ($request) {
+                $cari = trim($request->input('cari'));
 
-        if ($request->filled('cari')) {
-            $cari = trim($request->input('cari'));
-
-            $query->where(function ($q) use ($cari) {
-                $q->where('kode_tiket', 'like', "%{$cari}%")
-                    ->orWhereHas('mahasiswa', function ($m) use ($cari) {
-                        $m->where('nim', 'like', "%{$cari}%");
-                    });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        $pengajuans = $query
+                $query->where(function ($q) use ($cari) {
+                    $q->where('kode_tiket', 'like', "%{$cari}%")
+                        ->orWhereHas('mahasiswa', function ($mahasiswa) use ($cari) {
+                            $mahasiswa->where('nim', 'like', "%{$cari}%")
+                                ->orWhereHas('user', function ($user) use ($cari) {
+                                    $user->where('name', 'like', "%{$cari}%");
+                                });
+                        });
+                });
+            })
+            ->when(
+                $request->filled('status'),
+                fn ($query) => $query->where('status', $request->input('status'))
+            )
             ->latest('id')
             ->paginate(10)
             ->withQueryString();
-
-        $pilihanStatus = StatusPengajuan::cases();
 
         return view('operator.pengajuan', compact(
             'pengajuans',

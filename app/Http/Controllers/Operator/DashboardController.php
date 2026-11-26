@@ -4,218 +4,84 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengajuan;
-use App\Models\Pejabat;
 use App\StatusPengajuan;
-use App\Services\PengajuanStatusService;
-use App\Services\NomorSuratService;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class DashboardController extends Controller
 {
-    private function dataPengajuan()
-    {
-        return Pengajuan::where(
-            'status',
-            '!=',
-            StatusPengajuan::Draft->value
-        );
-    }
-
     public function index()
     {
-        $query = $this->dataPengajuan();
-
-        $baru = (clone $query)
-            ->where('status', StatusPengajuan::Diajukan->value)
-            ->count();
-
-        $perbaikan = (clone $query)
-            ->where('status', StatusPengajuan::PerluRevisi->value)
-            ->count();
-
-        $siap = (clone $query)
-            ->where('status', StatusPengajuan::SiapDiambil->value)
-            ->count();
-
         $statistik = [
             [
-                'nama' => 'Pengajuan Baru',
-                'jumlah' => $baru,
+                'nama' => 'Menunggu Verifikasi',
+                'jumlah' => Pengajuan::where(
+                    'status',
+                    StatusPengajuan::Diajukan->value
+                )->count(),
                 'ikon' => 'inbox',
                 'warna' => 'primary'
             ],
             [
-                'nama' => 'Mendekati SLA',
-                'jumlah' => null,
-                'ikon' => 'clock',
-                'warna' => 'warning'
-            ],
-            [
-                'nama' => 'Lewat SLA',
-                'jumlah' => null,
-                'ikon' => 'exclamation-triangle',
-                'warna' => 'danger'
-            ],
-            [
-                'nama' => 'Menunggu Perbaikan',
-                'jumlah' => $perbaikan,
-                'ikon' => 'arrow-repeat',
+                'nama' => 'Sedang Diproses',
+                'jumlah' => Pengajuan::where(
+                    'status',
+                    StatusPengajuan::Diproses->value
+                )->count(),
+                'ikon' => 'hourglass-split',
                 'warna' => 'info'
             ],
             [
-                'nama' => 'Siap Diambil',
-                'jumlah' => $siap,
-                'ikon' => 'check-circle',
-                'warna' => 'success'
+                'nama' => 'Menunggu TTD',
+                'jumlah' => Pengajuan::where(
+                    'status',
+                    StatusPengajuan::MenungguTtd->value
+                )->count(),
+                'ikon' => 'pen',
+                'warna' => 'warning'
             ],
             [
-                'nama' => 'Hampir Kedaluwarsa',
-                'jumlah' => null,
-                'ikon' => 'calendar-x',
-                'warna' => 'secondary'
+                'nama' => 'Selesai Bulan Ini',
+                'jumlah' => Pengajuan::where(
+                    'status',
+                    StatusPengajuan::Selesai->value
+                )->whereHas('riwayats', function ($query) {
+                    $query->where(
+                        'status_ke',
+                        StatusPengajuan::Selesai->value
+                    )->whereBetween('created_at', [
+                        now()->startOfMonth(),
+                        now()->endOfMonth()
+                    ]);
+                })->count(),
+                'ikon' => 'check-circle',
+                'warna' => 'success'
             ]
         ];
 
-        $prioritas = (clone $query)
-            ->with(['mahasiswa.user', 'jenisSurat'])
-            ->whereNotIn('status', [
-                StatusPengajuan::Draft->value,
-                StatusPengajuan::Selesai->value,
-                StatusPengajuan::Ditolak->value
-            ])
-            ->orderBy('diajukan_at')
-            ->orderBy('id')
-            ->limit(10)
-            ->get();
+        $pengajuanTerakhir = Pengajuan::with('mahasiswa.user')
+            ->where('status', '!=', StatusPengajuan::Draft->value)
+            ->latest('diajukan_at')
+            ->latest('id')
+            ->first();
 
-        return view('operator.dashboard', compact(
-            'statistik',
-            'prioritas'
-        ));
-    }
-
-    public function verifikasi()
-    {
-        $pengajuans = $this->dataPengajuan()
-            ->with(['mahasiswa.user', 'jenisSurat'])
+        $prioritas = Pengajuan::with([
+            'mahasiswa.user',
+            'jenisSurat',
+            'data'
+        ])
             ->whereIn('status', [
                 StatusPengajuan::Diajukan->value,
                 StatusPengajuan::Diproses->value,
                 StatusPengajuan::PerluRevisi->value
             ])
-            ->latest('id')
-            ->paginate(10);
+            ->orderBy('diajukan_at')
+            ->orderBy('id')
+            ->limit(8)
+            ->get();
 
-        return view('operator.verifikasi', compact('pengajuans'));
-    }
-
-    public function detail(Pengajuan $pengajuan)
-    {
-        abort_unless(
-            $this->dataPengajuan()
-                ->whereKey($pengajuan->id)
-                ->exists(),
-            404
-        );
-
-        $pengajuan->load([
-            'mahasiswa.user',
-            'mahasiswa.programStudi',
-            'jenisSurat',
-            'data',
-            'lampirans'
-        ]);
-
-        return view('operator.detail', compact('pengajuan'));
-    }
-
-    public function terima(
-        Pengajuan $pengajuan,
-        PengajuanStatusService $statusService
-    ) {
-        DB::transaction(function () use ($pengajuan, $statusService) {
-            $data = $this->dataPengajuan()
-                ->lockForUpdate()
-                ->findOrFail($pengajuan->id);
-
-            if ($data->status !== StatusPengajuan::Diajukan) {
-                throw ValidationException::withMessages([
-                    'status' => 'Pengajuan tidak dapat diterima.'
-                ]);
-            }
-
-            $statusService->ubah(
-                $data,
-                StatusPengajuan::Diproses,
-                auth()->user()
-            );
-        });
-
-        return redirect()
-            ->route('operator.pengajuan.show', $pengajuan->id)
-            ->with('success', 'Pengajuan berhasil diterima.');
-    }
-
-    public function kirimKajur(
-        Pengajuan $pengajuan,
-        PengajuanStatusService $statusService,
-        NomorSuratService $nomorService
-    ) {
-        DB::transaction(function () use (
-            $pengajuan,
-            $statusService,
-            $nomorService
-        ) {
-            $data = $this->dataPengajuan()
-                ->with(['templateSurat', 'surat'])
-                ->lockForUpdate()
-                ->findOrFail($pengajuan->id);
-
-            if ($data->status !== StatusPengajuan::Diproses) {
-                throw ValidationException::withMessages([
-                    'status' => 'Pengajuan belum siap dikirim.'
-                ]);
-            }
-
-            if (!$data->templateSurat?->is_active) {
-                throw ValidationException::withMessages([
-                    'template' => 'Template surat tidak tersedia.'
-                ]);
-            }
-
-            $pejabat = Pejabat::where('is_active', true)->first();
-
-            if (!$pejabat) {
-                throw ValidationException::withMessages([
-                    'pejabat' => 'Data Ketua Jurusan belum tersedia.'
-                ]);
-            }
-
-            if (!$data->surat) {
-                $data->surat()->create([
-                    'nomor_surat' => $nomorService->generate(
-                        $data->templateSurat
-                    ),
-                    'tanggal_surat' => now()->toDateString(),
-                    'isi_surat' => $data->templateSurat->isi_template,
-                    'kode_verifikasi' => Str::random(64),
-                    'pejabat_id' => $pejabat->id,
-                    'dibuat_oleh' => auth()->id(),
-                    'status_ttd' => 'belum'
-                ]);
-            }
-
-            $statusService->ubah(
-                $data,
-                StatusPengajuan::MenungguTtd,
-                auth()->user()
-            );
-        });
-
-        return redirect()
-            ->route('operator.pengajuan.show', $pengajuan->id)
-            ->with('success', 'Surat berhasil dikirim ke Kajur.');
+        return view('operator.dashboard', compact(
+            'statistik',
+            'pengajuanTerakhir',
+            'prioritas'
+        ));
     }
 }
