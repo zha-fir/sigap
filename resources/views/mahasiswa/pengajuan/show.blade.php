@@ -7,6 +7,24 @@
         .min-w-0 { min-width: 0; }
         .card-body dd, .card-body dt { overflow-wrap: anywhere; }
         aside { flex-shrink: 0; }
+
+        .tracker { display: flex; overflow-x: auto; padding-bottom: .25rem; }
+        .tracker-step { flex: 1 0 105px; position: relative; text-align: center; padding: 0 .25rem; }
+        .tracker-step::before { content: ''; position: absolute; top: 19px; right: 50%; width: 100%; height: 3px; background: #dee2e6; }
+        .tracker-step:first-child::before { display: none; }
+        .tracker-icon { position: relative; z-index: 1; width: 40px; height: 40px; margin: 0 auto .5rem; border-radius: 50%;
+                        display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+                        background: #e9ecef; color: #adb5bd; border: 3px solid #dee2e6; }
+        .tracker-label { font-size: .85rem; font-weight: 600; }
+        .tracker-time { display: block; color: #6c757d; font-size: .75rem; }
+        .tracker-step.upcoming .tracker-label { color: #adb5bd; font-weight: 500; }
+
+        .tracker-step.done::before, .tracker-step.current::before, .tracker-step.warning::before { background: #198754; }
+        .tracker-step.done .tracker-icon { background: #198754; border-color: #198754; color: #fff; }
+        .tracker-step.current .tracker-icon { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 0 0 .25rem rgba(13,110,253,.2); }
+        .tracker-step.warning .tracker-icon { background: #ffc107; border-color: #ffc107; color: #000; box-shadow: 0 0 0 .25rem rgba(255,193,7,.3); }
+        .tracker-step.danger::before { background: #dc3545; }
+        .tracker-step.danger .tracker-icon { background: #dc3545; border-color: #dc3545; color: #fff; box-shadow: 0 0 0 .25rem rgba(220,53,69,.2); }
     </style>
 
     @php
@@ -39,6 +57,97 @@
             {{ $pengajuan->alasan_tolak }}
         </div>
     @endif
+
+    @php
+        $status = $pengajuan->status;
+        $ditolak = $status === \App\StatusPengajuan::Ditolak;
+        $revisi = $status === \App\StatusPengajuan::PerluRevisi;
+
+        $alur = [
+            [\App\StatusPengajuan::Draft, 'bi-pencil'],
+            [\App\StatusPengajuan::Diajukan, 'bi-send'],
+            [\App\StatusPengajuan::Diproses, 'bi-gear'],
+            [\App\StatusPengajuan::MenungguTtd, 'bi-pen'],
+            [\App\StatusPengajuan::Ditandatangani, 'bi-patch-check'],
+            [\App\StatusPengajuan::SiapDiambil, 'bi-box-seam'],
+            [\App\StatusPengajuan::Selesai, 'bi-check2-circle'],
+        ];
+        $urutan = array_map(fn ($a) => $a[0], $alur);
+
+        if ($ditolak) {
+            $dari = $pengajuan->riwayats->where('status_ke', 'ditolak')->last()?->status_dari;
+            $posisi = array_search(\App\StatusPengajuan::tryFrom((string) $dari), $urutan, true);
+            $posisi = $posisi === false ? 1 : $posisi;
+        } elseif ($revisi) {
+            $posisi = 1; // perlu revisi = kembali ke tahap Diajukan
+        } else {
+            $posisi = array_search($status, $urutan, true);
+        }
+
+        $langkah = [];
+        foreach ($alur as $i => [$s, $ikon]) {
+            if ($ditolak && $i > $posisi) {
+                break; // pengajuan ditolak: tahap setelahnya tidak ditampilkan
+            }
+
+            if ($i < $posisi
+                || ($i === $posisi && ($ditolak || $status === \App\StatusPengajuan::Selesai))) {
+                $kelas = 'done';
+            } elseif ($i === $posisi) {
+                $kelas = $revisi ? 'warning' : 'current';
+            } else {
+                $kelas = 'upcoming';
+            }
+
+            $langkah[] = [
+                'label' => $s->label(),
+                'ikon' => $kelas === 'warning' ? 'bi-exclamation-triangle' : $ikon,
+                'kelas' => $kelas,
+                'waktu' => $kelas === 'upcoming'
+                    ? null
+                    : $pengajuan->riwayats->where('status_ke', $s->value)->last()?->created_at,
+            ];
+        }
+
+        if ($ditolak) {
+            $langkah[] = [
+                'label' => 'Ditolak',
+                'ikon' => 'bi-x-circle',
+                'kelas' => 'danger',
+                'waktu' => $pengajuan->riwayats->where('status_ke', 'ditolak')->last()?->created_at,
+            ];
+        }
+
+        $keterangan = match ($status) {
+            \App\StatusPengajuan::Draft => 'Pengajuan masih berupa draft. Lengkapi datanya lalu tekan Ajukan.',
+            \App\StatusPengajuan::Diajukan => 'Pengajuan sudah dikirim dan menunggu diperiksa operator.',
+            \App\StatusPengajuan::Diproses => 'Pengajuan diterima operator dan suratnya sedang dibuat.',
+            \App\StatusPengajuan::PerluRevisi => 'Operator meminta perbaikan. Periksa catatan revisi, lalu kirim ulang pengajuan.',
+            \App\StatusPengajuan::MenungguTtd => 'Surat sudah dikirim ke ketua jurusan dan menunggu tanda tangan.',
+            \App\StatusPengajuan::Ditandatangani => 'Surat sudah ditandatangani ketua jurusan.',
+            \App\StatusPengajuan::SiapDiambil => 'Surat sudah siap diambil atau dicetak.',
+            \App\StatusPengajuan::Selesai => 'Proses selesai. Surat sudah kamu terima.',
+            \App\StatusPengajuan::Ditolak => 'Pengajuan ditolak. Lihat alasan penolakan di atas.',
+        };
+    @endphp
+
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Status Pengajuan</div>
+        <div class="card-body">
+            <div class="tracker">
+                @foreach ($langkah as $l)
+                    <div class="tracker-step {{ $l['kelas'] }}">
+                        <div class="tracker-icon"><i class="bi {{ $l['ikon'] }}"></i></div>
+                        <div class="tracker-label">{{ $l['label'] }}</div>
+                        @if ($l['waktu'])
+                            <small class="tracker-time">{{ $l['waktu']->translatedFormat('d M Y, H:i') }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            <p class="text-muted small mb-0 mt-3">{{ $keterangan }}</p>
+        </div>
+    </div>
 
     <div class="row g-3" style="min-width: 0;">
         <div class="col-lg-8 min-w-0">
