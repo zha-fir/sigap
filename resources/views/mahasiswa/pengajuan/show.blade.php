@@ -32,7 +32,7 @@
         $fields = $pengajuan->templateSurat?->fields ?? collect();
     @endphp
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h4 mb-1">{{ $pengajuan->kode_tiket }}</h1>
             <span class="text-muted">{{ $pengajuan->jenisSurat->nama ?? '-' }}</span>
@@ -212,6 +212,7 @@
             </div>
 
             <div class="d-flex gap-2">
+
                 @if (Route::has('mahasiswa.pengajuan.edit')
                     && in_array($pengajuan->status, [\App\StatusPengajuan::Draft, \App\StatusPengajuan::PerluRevisi]))
                     <a href="{{ route('mahasiswa.pengajuan.edit', $pengajuan) }}" class="btn btn-warning">Edit</a>
