@@ -125,6 +125,56 @@ class PengajuanController extends Controller
             ->with('success', $ajukan ? 'Pengajuan berhasil dikirim ke operator.' : 'Draft berhasil disimpan.');
     }
 
+        public function edit(Pengajuan $pengajuan)
+    {
+        $this->izinkanEdit($pengajuan);
+
+        $pengajuan->load(['templateSurat.fields', 'templateSurat.jenisSurat', 'anggotas', 'lampirans']);
+
+        return view('mahasiswa.pengajuan.edit', [
+            'pengajuan' => $pengajuan,
+            'template' => $pengajuan->templateSurat,
+            'programStudis' => ProgramStudi::orderBy('nama')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Pengajuan $pengajuan)
+    {
+        $this->izinkanEdit($pengajuan);
+
+        $mahasiswa = $this->mahasiswa();
+        $template = $pengajuan->templateSurat()->with('fields')->firstOrFail();
+        $ajukan = $request->input('aksi') === 'ajukan';
+
+        $request->validate(
+            $this->aturan($template, $ajukan),
+            $this->pesan(),
+            $this->atribut($template)
+        );
+        $anggota = $this->ambilAnggota($request, $mahasiswa);
+
+        DB::transaction(function () use ($request, $template, $mahasiswa, $anggota, $ajukan, $pengajuan) {
+            $this->simpanIsi($pengajuan, $template, $request, $mahasiswa, $anggota);
+
+            if ($ajukan) {
+                $this->kirim($pengajuan);
+            }
+        });
+
+        return redirect()
+            ->route('mahasiswa.pengajuan.show', $pengajuan)
+            ->with('success', $ajukan ? 'Pengajuan berhasil dikirim ulang ke operator.' : 'Perubahan berhasil disimpan.');
+    }
+
+    private function izinkanEdit(Pengajuan $pengajuan): void
+    {
+        abort_if((int) $pengajuan->mahasiswa_id !== $this->mahasiswaId(), 403);
+        abort_unless(
+            in_array($pengajuan->status, [StatusPengajuan::Draft, StatusPengajuan::PerluRevisi], true),
+            403
+        );
+    }
+
     private function templateAktif()
     {
         return TemplateSurat::where('is_active', true)
