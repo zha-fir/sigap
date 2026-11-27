@@ -43,7 +43,6 @@ Route::middleware(['auth', 'role:mahasiswa'])->prefix('mahasiswa')->name('mahasi
 
 
  // ===== OPERATOR =====
-
 Route::middleware(['auth', 'role:operator'])
     ->prefix('operator')
     ->name('operator.')
@@ -58,21 +57,60 @@ Route::middleware(['auth', 'role:operator'])
         )->name('pengajuan.index');
 
         Route::get('/verifikasi',
-            [Operator\DashboardController::class, 'verifikasi']
+            [Operator\VerifikasiController::class, 'index']
         )->name('verifikasi.index');
 
         Route::get('/pengajuan/{pengajuan}',
-            [Operator\DashboardController::class, 'detail']
+            [Operator\VerifikasiController::class, 'show']
         )->name('pengajuan.show');
 
         Route::post('/pengajuan/{pengajuan}/terima',
-            [Operator\DashboardController::class, 'terima']
+            [Operator\VerifikasiController::class, 'terima']
         )->name('pengajuan.terima');
 
-        Route::post('/pengajuan/{pengajuan}/kirim-kajur',
-            [Operator\DashboardController::class, 'kirimKajur']
-        )->name('pengajuan.kirimKajur');
+        Route::post('/pengajuan/{pengajuan}/revisi',
+            [Operator\VerifikasiController::class, 'revisi']
+        )->name('pengajuan.revisi');
 
+        Route::post('/pengajuan/{pengajuan}/tolak',
+            [Operator\VerifikasiController::class, 'tolak']
+        )->name('pengajuan.tolak');
+
+        Route::get('/lampiran/{lampiran}/unduh',
+            [Operator\VerifikasiController::class, 'unduhLampiran']
+        )->name('lampiran.unduh');
+
+        Route::get('/buat-surat',
+            [Operator\SuratController::class, 'buat']
+        )->name('surat.buat');
+
+        Route::get('/pengajuan/{pengajuan}/surat',
+            [Operator\SuratController::class, 'edit']
+        )->name('pengajuan.surat.edit');
+
+        Route::post('/pengajuan/{pengajuan}/surat',
+            [Operator\SuratController::class, 'simpan']
+        )->name('pengajuan.surat.simpan');
+
+        Route::post('/pengajuan/{pengajuan}/surat/kirim',
+            [Operator\SuratController::class, 'kirim']
+        )->name('pengajuan.surat.kirim');
+
+        Route::get('/surat',
+            [Operator\SuratController::class, 'index']
+        )->name('surat.index');
+
+        Route::get('/surat/{pengajuan}/cetak',
+            [Operator\SuratController::class, 'cetak']
+        )->name('surat.cetak');
+
+        Route::post('/surat/{pengajuan}/siap-diambil',
+            [Operator\SuratController::class, 'siapDiambil']
+        )->name('surat.siap-diambil');
+
+        Route::post('/surat/{pengajuan}/selesai',
+            [Operator\SuratController::class, 'selesai']
+        )->name('surat.selesai');
     });
 
 // ===== KETUA JURUSAN =====

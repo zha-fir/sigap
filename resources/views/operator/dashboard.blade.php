@@ -4,98 +4,74 @@
 
 <div class="container-fluid">
 
-    <div class="mb-4">
-        <h3 class="fw-bold mb-1">Dashboard Antrean</h3>
-        <p class="text-muted mb-0">
-            Ringkasan pengajuan dan pelayanan surat jurusan
+    <div class="mb-3">
+        <h4 class="fw-bold mb-1">Dashboard Operator</h4>
+        <p class="text-muted small mb-0">
+            Ringkasan layanan pengajuan surat jurusan
         </p>
     </div>
 
     <div class="row g-3 mb-4">
 
         @foreach($statistik as $item)
-
-            <div class="col-md-6 col-xl-4">
+            <div class="col-6 col-xl-3">
 
                 <div class="card border-0 shadow-sm h-100">
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-3">
 
-                        <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
 
-                            <div>
-                                <p class="text-muted mb-2">
-                                    {{ $item['nama'] }}
-                                </p>
+                            <span class="text-muted small">
+                                {{ $item['nama'] }}
+                            </span>
 
-                                <h2 class="fw-bold mb-0">
-                                    {{ $item['jumlah'] ?? '—' }}
-                                </h2>
-                            </div>
-
-                            <div class="bg-light rounded-3 p-3">
-
-                                <i class="bi bi-{{ $item['ikon'] }}
-                                    fs-2 text-{{ $item['warna'] }}">
-                                </i>
-
-                            </div>
+                            <i class="bi bi-{{ $item['ikon'] }} fs-6 text-secondary"></i>
 
                         </div>
+
+                        <h5 class="fw-bold mt-3 mb-0">
+                            {{ $item['jumlah'] }}
+                        </h5>
 
                     </div>
 
                 </div>
 
             </div>
-
         @endforeach
 
     </div>
 
     <div class="card border-0 shadow-sm">
 
-        <div class="card-header bg-white py-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
 
-            <div class="d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0">
+                Antrean Pengajuan
+            </h6>
 
-                <div>
-                    <h5 class="fw-bold mb-1">
-                        Daftar Prioritas Pengajuan
-                    </h5>
-
-                    <p class="text-muted small mb-0">
-                        Pengajuan surat yang masih dalam proses
-                    </p>
-                </div>
-
-                <a href="{{ route('operator.pengajuan.index') }}"
-                   class="btn btn-outline-primary btn-sm">
-
-                    <i class="bi bi-list-ul me-1"></i>
-                    Lihat Semua
-
-                </a>
-
-            </div>
+            <a href="{{ route('operator.pengajuan.index') }}"
+               class="btn btn-outline-primary btn-sm">
+                Lihat Semua
+            </a>
 
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-3">
 
             <div class="table-responsive">
 
-                <table class="table table-hover align-middle">
+                <table class="table table-hover table-sm align-middle mb-0">
 
                     <thead class="table-light">
 
                         <tr>
                             <th>No</th>
-                            <th>Kode Pengajuan</th>
+                            <th>Kode Tiket</th>
                             <th>Nama Mahasiswa</th>
-                            <th>NIM</th>
-                            <th>Jenis Surat</th>
-                            <th>Tanggal Pengajuan</th>
+                            <th>Lokasi</th>
+                            <th>Tanggal</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -108,7 +84,9 @@
 
                             <tr>
 
-                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    {{ $loop->iteration }}
+                                </td>
 
                                 <td class="text-nowrap">
                                     {{ $item->kode_tiket }}
@@ -119,11 +97,7 @@
                                 </td>
 
                                 <td>
-                                    {{ $item->mahasiswa?->nim ?? '-' }}
-                                </td>
-
-                                <td>
-                                    {{ $item->jenisSurat?->nama ?? '-' }}
+                                    {{ $item->data->firstWhere('key', 'nama_lokasi')?->value ?? '-' }}
                                 </td>
 
                                 <td class="text-nowrap">
@@ -131,18 +105,13 @@
                                 </td>
 
                                 <td>
-                                    <span class="badge bg-{{ $item->status->badge() }}">
-                                        {{ $item->status->label() }}
-                                    </span>
+                                    <x-status-badge :status="$item->status" />
                                 </td>
 
                                 <td>
                                     <a href="{{ route('operator.pengajuan.show', $item->id) }}"
                                        class="btn btn-outline-primary btn-sm">
-
-                                        <i class="bi bi-eye me-1"></i>
                                         Detail
-
                                     </a>
                                 </td>
 
@@ -151,11 +120,8 @@
                         @empty
 
                             <tr>
-                                <td colspan="8"
-                                    class="text-center text-muted py-4">
-
-                                    Belum ada pengajuan yang perlu diproses.
-
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    Tidak ada pengajuan dalam antrean.
                                 </td>
                             </tr>
 
