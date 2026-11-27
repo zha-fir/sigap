@@ -46,11 +46,19 @@
     </div>
 
     @if ($pengajuan->catatan_revisi && $pengajuan->status === \App\StatusPengajuan::PerluRevisi)
-        <div class="alert alert-warning">
-            <strong>Catatan revisi dari operator:</strong><br>
+    <div class="alert alert-warning py-2 px-3 d-flex justify-content-between align-items-center gap-3">
+        <div>
+            <strong>Catatan revisi dari operator:</strong>
             {{ $pengajuan->catatan_revisi }}
         </div>
+        @if (Route::has('mahasiswa.pengajuan.edit'))
+            <a href="{{ route('mahasiswa.pengajuan.edit', $pengajuan) }}" class="btn btn-warning btn-sm flex-shrink-0">
+                <i class="bi bi-pencil-square me-1"></i>Edit
+            </a>
+        @endif
+    </div>
     @endif
+    
     @if ($pengajuan->alasan_tolak && $pengajuan->status === \App\StatusPengajuan::Ditolak)
         <div class="alert alert-danger">
             <strong>Alasan penolakan:</strong><br>
