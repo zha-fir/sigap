@@ -27,27 +27,23 @@
     </div>
 
     <h2 class="h5 fw-bold mb-3">Ringkasan Aktivitas</h2>
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="text-muted small">Total Pengajuan</div>
-                    <div class="fs-2 fw-bold">{{ $totalPengajuan }}</div>
-                </div>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+        <div class="card border-0 shadow-sm" style="width: 9.5rem;">
+            <div class="card-body py-2 px-3">
+                <div class="text-muted small text-truncate">Total Pengajuan</div>
+                <div class="fs-5 fw-bold">{{ $totalPengajuan }}</div>
             </div>
         </div>
         @foreach ($ringkasan as $r)
-            <div class="col-6 col-lg-3">
-                <a href="{{ Route::has('mahasiswa.pengajuan.index') ? route('mahasiswa.pengajuan.index', ['status' => $r['status']->value]) : '#' }}"
-                   class="text-decoration-none text-body">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-muted small">{{ $r['status']->label() }}</div>
-                            <div class="fs-2 fw-bold">{{ $r['total'] }}</div>
-                        </div>
+            <a href="{{ Route::has('mahasiswa.pengajuan.index') ? route('mahasiswa.pengajuan.index', ['status' => $r['status']->value]) : '#' }}"
+               class="text-decoration-none text-body" style="width: 9.5rem;">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body py-2 px-3">
+                        <div class="text-muted small text-truncate" title="{{ $r['status']->label() }}">{{ $r['status']->label() }}</div>
+                        <div class="fs-5 fw-bold">{{ $r['total'] }}</div>
                     </div>
-                </a>
-            </div>
+                </div>
+            </a>
         @endforeach
     </div>
 
