@@ -14,12 +14,17 @@
         $fields = $pengajuan->templateSurat?->fields ?? collect();
     @endphp
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h4 mb-1">{{ $pengajuan->kode_tiket }}</h1>
             <span class="text-muted">{{ $pengajuan->jenisSurat->nama ?? '-' }}</span>
         </div>
-        <x-status-badge :status="$pengajuan->status" />
+        <div class="d-flex flex-column align-items-end gap-2">
+            <x-status-badge :status="$pengajuan->status" />
+            <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Kembali
+            </a>
+        </div>
     </div>
 
     @if ($pengajuan->catatan_revisi && $pengajuan->status === \App\StatusPengajuan::PerluRevisi)
@@ -98,7 +103,6 @@
             </div>
 
             <div class="d-flex gap-2">
-                <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline-secondary">Kembali</a>
 
                 @if (Route::has('mahasiswa.pengajuan.edit')
                     && in_array($pengajuan->status, [\App\StatusPengajuan::Draft, \App\StatusPengajuan::PerluRevisi]))
