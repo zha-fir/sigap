@@ -3,12 +3,17 @@
 @section('title', 'Detail Pengajuan')
 
 @section('content')
+@php
+    $kembaliUrl = request('dari') === 'dashboard'
+        ? route('mahasiswa.dashboard')
+        : route('mahasiswa.pengajuan.index');
+@endphp
     <style>
         .min-w-0 { min-width: 0; }
         .card-body dd, .card-body dt { overflow-wrap: anywhere; }
         aside { flex-shrink: 0; }
 
-        .tracker { display: flex; overflow-x: auto; padding-bottom: .25rem; }
+        .tracker { display: flex; overflow-x: auto; padding: .35rem .25rem .25rem; }
         .tracker-step { flex: 1 0 105px; position: relative; text-align: center; padding: 0 .25rem; }
         .tracker-step::before { content: ''; position: absolute; top: 19px; right: 50%; width: 100%; height: 3px; background: #dee2e6; }
         .tracker-step:first-child::before { display: none; }
@@ -39,7 +44,7 @@
         </div>
         <div class="d-flex flex-column align-items-end gap-2">
             <x-status-badge :status="$pengajuan->status" />
-            <a href="{{ route('mahasiswa.pengajuan.index') }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{ $kembaliUrl }}" class="btn btn-outline-secondary btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Kembali
             </a>
         </div>

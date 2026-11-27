@@ -69,8 +69,8 @@
                             <td>{{ $p->jenisSurat->nama ?? '-' }}</td>
                             <td><x-status-badge :status="$p->status" /></td>
                             <td class="text-end">
-                                <a href="{{ route('mahasiswa.pengajuan.show', $p) }}"
-                                   class="btn btn-sm btn-outline-primary">Detail</a>
+                                <a href="{{ route('mahasiswa.pengajuan.show', ['pengajuan' => $p, 'dari' => 'dashboard']) }}"
+                                class="btn btn-sm btn-outline-primary">Detail</a>
                             </td>
                         </tr>
                     @empty
